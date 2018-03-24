@@ -1,0 +1,21 @@
+version: '2'
+
+services:
+  mongodb:
+      image: mongo
+      volumes:
+        - ./data/db:/data/db
+      ports:
+        - 27017:27017
+
+  beacongen-api:
+    build: .
+    volumes:
+      - .:/app
+    ports:
+      - 8081:8081
+    links:
+      - mongodb
+    depends_on:
+      - mongodb 
+  
