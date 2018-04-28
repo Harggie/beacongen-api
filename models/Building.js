@@ -9,5 +9,5 @@ const BuildingSchema = new mongoose.Schema({
 mongoose.model('Building', BuildingSchema);
 
 module.exports = {
-    Building: mongoose.model('User'),
+    Building: mongoose.model('Building'),
 }

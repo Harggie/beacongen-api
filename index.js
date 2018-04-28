@@ -3,11 +3,17 @@ const app = express();
 const port = process.env.PORT || 8081;
 const db = require('./config/db');
 const auth = require('./config/auth')();
+const cors = require('cors');
+
+// cors
+app.use(cors());
 
 // controllers
 const UserController = require('./controllers/UserController');
-app.use('/users', UserController);
+const BuildingController = require('./controllers/BuildingController');
 
+app.use('/users', UserController);
+app.use('/buildings', BuildingController);
 
 // jwt auth
 app.use(auth.initialize());

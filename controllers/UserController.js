@@ -16,7 +16,6 @@ const { User } = require('../models/User');
 router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
 
-
 // return list of users
 router.get('/', auth.authenticate(), function (req, res) {
     User.find({}, function (err, users) {
@@ -29,7 +28,7 @@ router.get('/', auth.authenticate(), function (req, res) {
 
 // create new user
 router.post('/', [
-    check('name').isLength({ min: 5 }).withMessage('must have atleast 5 characters'),
+    check('username').isLength({ min: 5 }).withMessage('must have atleast 5 characters'),
     check('email').isEmail().withMessage('must be an email').trim().normalizeEmail()
 ], function (req, res) {
     const errors = validationResult(req);
@@ -38,7 +37,7 @@ router.post('/', [
     }
 
     User.create({
-        name: req.body.name,
+        username: req.body.username,
         email: req.body.email,
         password: crypto.createHash('sha256').update(req.body.password).digest('hex')
     }, function (err, user) {
@@ -50,7 +49,7 @@ router.post('/', [
 
 // user login
 router.post("/login", [
-    check('name').exists(),
+    check('username').exists(),
     check('password').exists()
 ], function (req, res) {
     const errors = validationResult(req);
@@ -58,14 +57,17 @@ router.post("/login", [
         return res.status(422).json({ errors: errors.mapped() });
     }
 
-    var name = req.body.name;
+    var username = req.body.username;
     var password = crypto.createHash('sha256').update(req.body.password).digest('hex');
 
     User.findOne({
-        'name': name,
+        'username': username,
         'password': password
     }, function (err, user) {
-        if (err || !user) return res.status(401).send('User not found');
+        if (err || !user){
+            res.statusMessage = 'User not found';
+            return res.status(401).end();
+        }
 
         var payload = {
             id: user.id
@@ -73,6 +75,7 @@ router.post("/login", [
     
         var token = jwt.encode(payload, jwtSecret);
         res.json({
+            username: user.username,
             token: token
         });
     });

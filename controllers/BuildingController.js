@@ -29,6 +29,14 @@ router.get('/', auth.authenticate(), function (req, res) {
     })
 });
 
+// return single building
+router.get('/:id', auth.authenticate(), function (req, res) {
+    Building.findById(req.params.id, function (err, building) {
+        if (err || !building || building.user_id !== req.user.id) return res.status(500).send('Error occured or building not found');
+        return res.status(200).send(building);
+      });
+});
+
 // create new building
 router.post('/', auth.authenticate(), function (req, res) {
 
@@ -46,7 +54,7 @@ router.post('/', auth.authenticate(), function (req, res) {
 
 // update existing building
 router.patch('/:id', auth.authenticate(), function(req, res) {
-    Building.findById(id, function (err, building) {
+    Building.findById(req.params.id, function (err, building) {
         if (err || !building || building.user_id !== req.user.id) return res.status(500).send('Error occured or building not found');
         
         building.set({ 

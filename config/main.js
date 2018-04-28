@@ -1,7 +1,7 @@
 // main.js
 
 module.exports = {
-    jwtSecret: "LOLTURBOSWAGGERH@H@H@H",
+    jwtSecret: "ROFLCOPTER",
     jwtSession: {
         session: false
     }

@@ -1,13 +1,14 @@
 // auth.js
 const passport = require("passport");  
 const { ExtractJwt, Strategy } = require("passport-jwt");
-const { jwtSession, jwtSecret }= require("./main"); 
+const { jwtSession, jwtSecret } = require("./main"); 
+const { User } = require('../models/User');
 
 const params = {  
     secretOrKey: jwtSecret,
     jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken()
 };
-const User = require('../models/User');
+
 
 module.exports = function() {  
     var strategy = new Strategy(params, function(payload, done) {
