@@ -1,4 +1,4 @@
-// User model
+// Building model
 const mongoose = require('mongoose');
 const BuildingSchema = new mongoose.Schema({
     title: String,

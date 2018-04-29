@@ -1,4 +1,4 @@
-// UserController
+// BuildingController
 
 const express = require('express');
 const router = express.Router();
@@ -72,12 +72,12 @@ router.patch('/:id', auth.authenticate(), function(req, res) {
 
 // delete existing building
 router.delete('/:id', auth.authenticate(), function(req, res) {
-    Building.findById(id, function (err, building) {
+    Building.findById(req.params.id, function (err, building) {
         if (err || !building || building.user_id !== req.user.id) return res.status(500).send('Error occured or building not found');
         
-        building.remove(function (err, updatedBuilding) {
+        building.remove(function (err, removedBuilding) {
           if (err) return res.status(500).send('Error occured during building deletion');
-          return res.status(200).send('Building removed');
+          return res.send(removedBuilding);
         });
       });
 });
