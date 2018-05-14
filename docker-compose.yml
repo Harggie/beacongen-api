@@ -8,14 +8,14 @@ services:
       ports:
         - 27017:27017
 
-  beacongen-api:
-    build: .
-    volumes:
-      - .:/app
-    ports:
-      - 8081:8081
-    links:
-      - mongodb
-    depends_on:
-      - mongodb 
+  # beacongen-api:
+  #   build: .
+  #   volumes:
+  #     - .:/app
+  #   ports:
+  #     - 8081:8081
+  #   links:
+  #     - mongodb
+  #   depends_on:
+  #     - mongodb 
   

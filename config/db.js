@@ -1,7 +1,7 @@
 // db.js
 
 const mongoose = require('mongoose');
-const dbUrl = 'mongodb://mongodb:27017/beacongen_db';
+const dbUrl = 'mongodb://0.0.0.0:27017/beacongen_db';
 
 function reconnect(){
     return mongoose.connect(dbUrl, function(err) {

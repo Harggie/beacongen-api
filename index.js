@@ -22,10 +22,12 @@ app.use(express.static(__dirname + '/data/uploads'));
 const UserController = require('./controllers/UserController');
 const BuildingController = require('./controllers/BuildingController');
 const FloorController = require('./controllers/FloorController');
+const ReadingController = require('./controllers/ReadingController');
 
 app.use('/users', UserController);
 app.use('/buildings', BuildingController);
 app.use('/floors', FloorController);
+app.use('/readings', ReadingController);
 
 // jwt auth
 app.use(auth.initialize());

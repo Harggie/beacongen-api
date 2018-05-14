@@ -15,6 +15,7 @@
     "express-fileupload": "^0.4.0",
     "express-validator": "^5.0.3",
     "jwt-simple": "^0.5.1",
+    "kalmanjs": "^1.0.0-beta",
     "mkdirp": "^0.5.1",
     "mongoose": "^5.0.11",
     "passport": "^0.4.0",
