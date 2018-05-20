@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 const jwt = require("jwt-simple");
 const crypto = require('crypto');
 const auth = require('../config/auth')();
-const KalmanFilter = require("kalmanjs").default;
+const rssi = require('../helpers/Rssi');
 
 const { jwtSecret } = require('../config/main');
 const { check, validationResult } = require('express-validator/check');
@@ -25,78 +25,66 @@ router.get('/', function (req, res) {
             return res.status(500).send('Error has occured');
         }
 
-        let scans = sortReadingsByScanId(readings);
+        let beaconCoords = {
+            "6A:C2:D2:F2:09:09": {
+                x: 0,
+                y: 0
+            },
+            "6A:C2:D2:F2:09:10": {
+                x: 10,
+                y: 0
+            },
+            "6A:C2:D2:F2:09:11": {
+                x: 5,
+                y: 5
+            },
+        }
 
-        // FILTERING
-        // groupedData = groupedData.map(function(group) {
-        //     let kalmanFilter = new KalmanFilter({R: 0.01, Q: 1});
+        let scans = rssi.sortReadingsByScanId(readings);
+        let filteredScans = rssi.filterScans(scans);
+        let points = rssi.calculatePoints(filteredScans, beaconCoords);
 
-        //     let reducedGroup = group.map(function(reading) {
-        //         reading.rssi = kalmanFilter.filter(reading.rssi);
-        //         reading.distance = Math.pow(10, (-59 - reading.rssi)/(10 * 3.5));
-        //         return reading;
-        //     }).reduce(function(prev, current) {
-        //         return {
-        //             rssi: prev.rssi + current.rssi
-        //         };
-        //     });
+        points = points.map(function(point) {
+            return {
+                x: point[0],
+                y: point[1],
+                value: 1
+            };
+        });
 
-        //     let avgRssi = reducedGroup.rssi / group.length;
+        // let computedPoints = [
+        //     [5.344345391975285, 0.7790583639580679]
+        //     [4.946236660643907, 1.1931467026757911]
+        //     [4.694913834454245, 1.3572610773447384]
+        //     [7.818976143855717, 2.7459567110353404]
+        // ];
 
-        //     return {
-        //         rssi: avgRssi,
-        //         distance: Math.pow(10, (-59 - avgRssi)/(10 * 3))
-        //     };
-        // });
+        // let objectPoints = [
+        //     {
+        //         x: 5.344345391975285,
+        //         y: 0.7790583639580679,
+        //         value: 1
+        //     },
+        //     {
+        //         x: 4.946236660643907,
+        //         y: 1.1931467026757911,
+        //         value: 1
+        //     },
+        //     {
+        //         x: 4.694913834454245,
+        //         y: 1.3572610773447384,
+        //         value: 1
+        //     },
+        //     {
+        //         x: 7.818976143855717,
+        //         y: 2.7459567110353404,
+        //         value: 1
+        //     }
+        // ];
 
-        return res.status(200).send(scans);
+        return res.status(200).send(points);
     })
 });
-
-// function sortReadingsByAddress(scans) {
-//     scans.map(function(scan, index, array) {
-//         let devices = {};
-//         scan.map(function(reading, index, array) {
-//             if (data[reading.scan_id] === undefined) {
-//                 data[reading.scan_id] = [reading];
-//             } else {
-//                 data[reading.scan_id].push(reading);    
-//             } 
-//         })
-//     });
-// }
-
-function sortReadingsByScanId(readings) {
-    let data = {};
-    readings.map(function (reading, index, array) {
-        if (data[reading.scan_id] === undefined) {
-            data[reading.scan_id] = {};
-            data[reading.scan_id][reading.address] = [reading];
-            return;
-        }
-
-        if (data[reading.scan_id][reading.address] === undefined) {
-            data[reading.scan_id][reading.address] = [reading];
-            return;
-        }
-
-        data[reading.scan_id][reading.address].push(reading);
-    });
-
-    let scanData = [];
-    for (let scan in data) {
-        scanData.push(data[scan]);
-    }
-
-    return scanData;
-}
-
-function formatReading(reading, timeDiff) {
-    return {
-        rssi: reading.rssi,
-        timeDiff: timeDiff,
-    }
-}
 
 // create new reading
 router.post('/', function (req, res) {

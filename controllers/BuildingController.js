@@ -66,7 +66,7 @@ router.patch('/:id', auth.authenticate(), function(req, res) {
         building.save(function (err, updatedBuilding) {
           if (err) return res.status(500).send('Error occured during building creation');
           return res.send(updatedBuilding);
-        });
+        });a 
       });
 });
 

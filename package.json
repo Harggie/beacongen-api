@@ -19,6 +19,7 @@
     "mkdirp": "^0.5.1",
     "mongoose": "^5.0.11",
     "passport": "^0.4.0",
-    "passport-jwt": "^4.0.0"
+    "passport-jwt": "^4.0.0",
+    "trilat": "^1.0.0"
   }
 }

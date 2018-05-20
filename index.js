@@ -23,11 +23,13 @@ const UserController = require('./controllers/UserController');
 const BuildingController = require('./controllers/BuildingController');
 const FloorController = require('./controllers/FloorController');
 const ReadingController = require('./controllers/ReadingController');
+const BeaconController = require('./controllers/BeaconController');
 
 app.use('/users', UserController);
 app.use('/buildings', BuildingController);
 app.use('/floors', FloorController);
 app.use('/readings', ReadingController);
+app.use('/beacons', BeaconController);
 
 // jwt auth
 app.use(auth.initialize());
