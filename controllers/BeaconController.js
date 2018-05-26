@@ -18,7 +18,7 @@ router.use(bodyParser.json());
 
 
 // return list of beacons
-router.get('/:floor_id', function (req, res) {
+router.get('/floor/:floor_id', function (req, res) {
     Beacon.find({
         floor_id: req.params.floor_id
     }, function (err, beacons) {
@@ -36,10 +36,40 @@ router.post('/', function (req, res) {
         x: req.body.x,
         y: req.body.y,
         address: req.body.address,
+        name: req.body.name,
         floor_id: req.body.floor_id
     }, function (err, beacon) {
         if (err) return res.status(500).send('Error has occured during beacon creation');
         return res.status(200).send(beacon);
+    });
+});
+
+// update existing beacon
+router.patch('/:id', auth.authenticate(), function (req, res) {
+    Beacon.findById(req.params.id, function (err, beacon) {
+        if (err || !beacon) return res.status(500).send('Error occured or beacon not found');
+
+        beacon.set({
+            name: req.body.name,
+            address: req.body.address,
+        });
+
+        beacon.save(function (err, updatedBeacon) {
+            if (err) return res.status(500).send('Error occured during beacon update');
+            return res.send(updatedBeacon);
+        });
+    });
+});
+
+// delete existing beacon
+router.delete('/:id', auth.authenticate(), function (req, res) {
+    Beacon.findById(req.params.id, function (err, beacon) {
+        if (err || !beacon) return res.status(500).send('Error occured or beacon not found');
+
+        beacon.remove(function (err, removedBeacon) {
+            if (err) return res.status(500).send('Error occured during beacon deletion');
+            return res.send(removedBeacon);
+        });
     });
 });
 
