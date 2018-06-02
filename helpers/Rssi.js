@@ -18,6 +18,7 @@ function calculatePoints(filteredScans, beaconCoords) {
                 let beacon = beaconCoords[device.address];
                 input.push([beacon.x, beacon.y, device.distance]);
             });
+            console.log(input);
             return trilat(input);
         }
     }).filter(function (coordinates) {
@@ -25,7 +26,7 @@ function calculatePoints(filteredScans, beaconCoords) {
     });
 };
 
-function filterScans(scans) {
+function filterScans(scans, scale) {
     return scans.map(function (scan) {
         return scan.map(function (device) {
             let kalmanFilter = new KalmanFilter({ R: 0.01, Q: 1 });
@@ -44,7 +45,7 @@ function filterScans(scans) {
             return {
                 address: device[0].address,
                 rssi: avgRssi,
-                distance: Math.pow(10, (-59 - avgRssi) / (10 * 3))
+                distance: Math.pow(10, (-59 - avgRssi) / (10 * 3)) * scale
             };
         });
     });

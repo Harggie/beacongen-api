@@ -53,7 +53,7 @@ router.get('/', function (req, res) {
         });
 
         return res.status(200).send(points);
-    })
+    });
 });
 
 // create new reading

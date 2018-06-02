@@ -7,6 +7,8 @@ const jwt = require("jwt-simple");
 const crypto = require('crypto');
 const auth = require('../config/auth')();
 const mkdirp = require('mkdirp');
+const rssi = require('../helpers/Rssi');
+const mongoose = require('mongoose');
 
 const { jwtSecret } = require('../config/main');
 const { check, validationResult } = require('express-validator/check');
@@ -14,6 +16,8 @@ const { matchedData, sanitize } = require('express-validator/filter');
 
 const { Building } = require('../models/Building');
 const { Floor } = require('../models/Floor');
+const { Beacon } = require('../models/Beacon');
+const { Reading } = require('../models/Reading');
 
 router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
@@ -70,13 +74,11 @@ router.post('/', auth.authenticate(), function (req, res) {
 router.patch('/:id', auth.authenticate(), function (req, res) {
     Floor.findById(req.params.id, function (err, floor) {
         if (err || !floor || floor.user_id !== req.user.id) return res.status(500).send('Error occured or floor not found');
-
-        let somePath = '';
-
+        
         floor.set({
             title: req.body.title,
             description: req.body.description,
-            svg_path: somePath,
+            svg_path: req.body.svg_path,
             res_horizontal: req.body.res_horizontal,
             res_vertical: req.body.res_vertical,
             scale_horizontal: req.body.scale_horizontal,
@@ -117,7 +119,7 @@ router.post('/:id/upload', auth.authenticate(), function (req, res) {
 
         mkdirp(filePath, function (err) {
             if (err) return res.status(500).send(err);
-            file.mv(filePath  + '/' + file.name, function (err) {
+            file.mv(filePath + '/' + file.name, function (err) {
                 if (err) return res.status(500).send(err);
                 floor.set({ svg_path: '/' + floor._id + '/' + file.name });
                 floor.save(function (err, updatedFloor) {
@@ -128,7 +130,48 @@ router.post('/:id/upload', auth.authenticate(), function (req, res) {
         });
 
     });
-})
+});
+
+
+router.get('/:id/points', auth.authenticate(), function (req, res) {
+    Floor.findById(req.params.id, function (err, floor) {
+        if (err || !floor || floor.user_id !== req.user.id) return res.status(500).send('Error occured or floor not found');
+
+        // get beacons coords
+        Beacon.find({ floor_id: req.params.id }, function (err, beacons) {
+            if (err) return res.status(500).send('Error occured during beacon search');
+            let beaconCoords = {};
+            let beaconAddresses = [];
+            beacons.map(function (beacon) {
+                beaconAddresses.push(beacon.address);
+                beaconCoords[beacon.address] = {
+                    x: beacon.x,
+                    y: beacon.y
+                };
+            });
+
+            Reading.find({ address: { $in: beaconAddresses } }, function (req, readings) {
+                if (err) return res.status(500).send('Error occured during reading search');
+
+                let scans = rssi.sortReadingsByScanId(readings);
+                let filteredScans = rssi.filterScans(scans, floor.scale_horizontal);
+                let points = rssi.calculatePoints(filteredScans, beaconCoords);
+
+                points = points.map(function (point) {
+                    return {
+                        x: Math.floor(point[0]),
+                        y: Math.floor(point[1]),
+                        value: 1
+                    };
+                });
+
+                return res.status(200).send(points);
+            });
+
+
+        });
+    });
+});
 
 function validateBuilding(user_id, building_id) {
     return Building.find({
